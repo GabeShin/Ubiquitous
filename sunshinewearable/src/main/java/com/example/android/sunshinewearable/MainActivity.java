@@ -55,18 +55,9 @@ public class MainActivity extends CanvasWatchFaceService {
 
     private String LOG_TAG = MainActivity.class.getSimpleName();
 
-    private static final String WEATHER_MAX_TEMP = "wearable.weather.max_temp";
-    private static final String WEATHER_MIN_TEMP = "wearable.weather.min_temp";
-    private static final String WEATHER_HUMIDITY = "wearable.weather.humidity";
-    private static final String WEATHER_PRESSURE = "wearable.weather.pressure";
-    private static final String WEATHER_WIND_SPEED = "wearable.weather.wind_speed";
-    private static final String WEATHER_CONDITION_ID = "wearable.weather.condition_id";
-    private static final String WEATHER_CONDITION_ICON = "wearable.weather.condition_icon";
-    private static final String WEATHER_WIND_DEGREE = "wearable.weather.wind_degree";
-
     private static final Double WEATHER_DEFAULT_VALUE = 0.0d;
     private static final int WEATHER_CONDITION_DEFAULT_ID = R.drawable.ic_clear;
-    private static final String PATH_WITH_WEATHER_DATA = "/weather";
+    private static final String PATH_WITH_WEATHER_DATA = "/wearable_weather_data";
 
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
@@ -123,17 +114,11 @@ public class MainActivity extends CanvasWatchFaceService {
 
         //String for get weather Info from mobileApp.
 
-        String mWeatherText = "weather";//weather condition
         Drawable mWeatherIcon; //weather Icon
         int mWeatherConditionId;
         int mWeatherIconId = -1;
         double mMaxTemp;
         double mMinTemp;
-        double mPressures;
-        double mWindSpeed;
-        double mWindDegree;
-        double mHumidity;
-
 
         GoogleApiClient mGoogleApiClient; //GoogleClient for get Data from Mobile.
 
@@ -453,19 +438,12 @@ public class MainActivity extends CanvasWatchFaceService {
         private void setDefaultValuesForMissingWeatherKeys(DataMap weatherData){
             Log.d("Wearable-WearService", "startsetDefaultvaluesForMissingWeatherKeys ");
 
-            addDataKeyIfMissing(weatherData, WEATHER_MAX_TEMP,
+            addDataKeyIfMissing(weatherData, "WEATHER_MAX_TEMP",
                     WEATHER_DEFAULT_VALUE);
-            addDataKeyIfMissing(weatherData, WEATHER_MIN_TEMP,
+            addDataKeyIfMissing(weatherData, "WEATHER_MIN_TEMP",
                     WEATHER_DEFAULT_VALUE);
-            addDataKeyIfMissing(weatherData, WEATHER_CONDITION_ID,
+            addDataKeyIfMissing(weatherData, "WEATHER_IMAGE_ID",
                     WEATHER_CONDITION_DEFAULT_ID);
-            addDataKeyIfMissing(weatherData, WEATHER_HUMIDITY,
-                    WEATHER_DEFAULT_VALUE);
-            addDataKeyIfMissing(weatherData, WEATHER_PRESSURE,
-                    WEATHER_DEFAULT_VALUE);
-            addDataKeyIfMissing(weatherData, WEATHER_WIND_SPEED,
-                    WEATHER_DEFAULT_VALUE);
-
         }
 
         private void addDataKeyIfMissing(DataMap weatherData, String key, Double weatherValues){
@@ -507,36 +485,29 @@ public class MainActivity extends CanvasWatchFaceService {
         @Override
         public void onDataChanged(DataEventBuffer dataEvents) {
             for (DataEvent dataEvent : dataEvents) {
-                if (dataEvent.getType() != DataEvent.TYPE_CHANGED) {
-                    DataItem dataItem = dataEvent.getDataItem();
-                    if (!dataItem.getUri().getPath().equals(PATH_WITH_WEATHER_DATA)) {
-
-                        DataMapItem dataMapItem = DataMapItem.fromDataItem(dataItem);
-                        DataMap weatherData = dataMapItem.getDataMap();
-                        if (Log.isLoggable(LOG_TAG, Log.DEBUG)) {
-                            Log.d(LOG_TAG, "weather Data Updated: " + weatherData);
-                        }
-                        updateUiForWeatherDataMap(weatherData);
-                    }
+                String path = dataEvent.getDataItem().getUri().getPath();
+                if (path.equals(PATH_WITH_WEATHER_DATA)){
+                    DataMap weatherData = DataMapItem.fromDataItem(dataEvent.getDataItem()).getDataMap();
+                    updateUiForWeatherDataMap(weatherData);
                 }
             }
         }
 
         private void updateUiForWeatherDataMap(DataMap weatherData) {
-            boolean uiUpdated = false;
+
             for (String weatherKey : weatherData.keySet()){
                 if (!weatherData.containsKey(weatherKey)){
                     continue;
                 }
                 switch (weatherKey){
-                    case WEATHER_CONDITION_ID:
+                    case "WEATHER_IMAGE_ID":
                         mWeatherConditionId = weatherData.getInt(weatherKey);
                         mWeatherIconId = getSmallArtResourceIdForWeatherCondition(mWeatherConditionId);
                         break;
-                    case WEATHER_MAX_TEMP:
+                    case "WEATHER_MAX_TEMP":
                         mMaxTemp = weatherData.getDouble(weatherKey);
                         break;
-                    case WEATHER_MIN_TEMP:
+                    case "WEATHER_MIN_TEMP":
                         mMinTemp = weatherData.getDouble(weatherKey);
                         break;
                 }

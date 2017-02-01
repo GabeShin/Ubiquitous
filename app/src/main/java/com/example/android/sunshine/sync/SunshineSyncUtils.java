@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.example.android.sunshine.data.WeatherContract;
 import com.firebase.jobdispatcher.Constraint;
@@ -166,9 +167,6 @@ public class SunshineSyncUtils {
                  * If the Cursor was null OR if it was empty, we need to sync immediately to
                  * be able to display data to the user.
                  */
-                if (null == cursor || cursor.getCount() == 0) {
-                    startImmediateSync(context);
-                }
 
                 /* Make sure to close the Cursor to avoid memory leaks! */
                 cursor.close();

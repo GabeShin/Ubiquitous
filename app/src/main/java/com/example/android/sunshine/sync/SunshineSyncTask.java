@@ -19,19 +19,14 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.format.DateUtils;
+import android.util.Log;
 
 import com.example.android.sunshine.data.SunshinePreferences;
 import com.example.android.sunshine.data.WeatherContract;
 import com.example.android.sunshine.utilities.NetworkUtils;
 import com.example.android.sunshine.utilities.NotificationUtils;
 import com.example.android.sunshine.utilities.OpenWeatherJsonUtils;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.net.URL;
 
@@ -48,6 +43,7 @@ public class SunshineSyncTask {
     public static synchronized void syncWeather(Context context) {
 
         try {
+
             /*
              * The getUrl method will return the URL that we need to get the forecast JSON for the
              * weather. It will decide whether to create a URL based off of the latitude and
@@ -110,11 +106,6 @@ public class SunshineSyncTask {
                 if (notificationsEnabled && oneDayPassedSinceLastNotification) {
                     NotificationUtils.notifyUserOfNewWeather(context);
                 }
-
-                /*
-                 * Perform WearableSync
-                 */
-                context.startService(new Intent(context, WearableSyncService.class));
 
             /* If the code reaches this point, we have successfully performed our sync */
 
