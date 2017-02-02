@@ -29,6 +29,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
@@ -404,14 +405,18 @@ public class MainActivity extends CanvasWatchFaceService {
 
         @Override
         public void onConnected(@Nullable Bundle bundle) {
+            Wearable.DataApi.addListener(mGoogleApiClient, this).setResultCallback(new ResultCallback<Status>() {
+                @Override
+                public void onResult(@NonNull Status status) {
+                    Log.v(LOG_TAG, "Result status is " + status.toString());
+                }
+            });
 
             if (bundle != null) {
                 Log.d("Wearable-WearService", "onConnected : " + bundle.toString());
             }else {
                 Log.d("Wearable-WearService", "onConnected : bundle is null ");
             }
-
-            Wearable.DataApi.addListener(mGoogleApiClient, this);
         }
 
         @Override
@@ -455,10 +460,10 @@ public class MainActivity extends CanvasWatchFaceService {
                         mWeatherConditionId = weatherData.getInt(weatherKey);
                         mWeatherIconId = getSmallArtResourceIdForWeatherCondition(mWeatherConditionId);
                         break;
-                    case "wearable.weather_max_temp":
+                    case "wearable.max_temp":
                         mMaxTemp = weatherData.getDouble(weatherKey);
                         break;
-                    case "wearable.weather_min_temp":
+                    case "wearable.min_temp":
                         mMinTemp = weatherData.getDouble(weatherKey);
                         break;
                 }

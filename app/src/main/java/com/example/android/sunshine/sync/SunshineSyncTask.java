@@ -44,7 +44,7 @@ public class SunshineSyncTask {
     public static synchronized void syncWeather(Context context) {
 
         try {
-
+            Log.d("SunshineSyncTask", "At SyncWeather!");
             /*
              * The getUrl method will return the URL that we need to get the forecast JSON for the
              * weather. It will decide whether to create a URL based off of the latitude and
