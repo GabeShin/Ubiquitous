@@ -297,9 +297,6 @@ public class MainActivity extends CanvasWatchFaceService {
                             .show();
 
                     Wearable.DataApi.addListener(mGoogleApiClient, Engine.this);
-                    updateWeatherData();
-
-                    Log.d(LOG_TAG,"updateWeatherData");
                     break;
             }
             invalidate();
@@ -414,81 +411,35 @@ public class MainActivity extends CanvasWatchFaceService {
                 Log.d("Wearable-WearService", "onConnected : bundle is null ");
             }
 
-            Wearable.DataApi.addListener(mGoogleApiClient, Engine.this);
-            updateWeatherData();
-        }
-
-        private void updateWeatherData() {
-            Log.d("Wearable-WearService", "updateWeatherData ");
-
-            fetchWeatherDataMap(mGoogleApiClient,
-                    new FetchWeatherDataMapCallback() {
-                        @Override
-                        public void onWeatherDataFetched(DataMap weatherData) {
-                            Log.d("Wearable-WearService", "onWeatherDataFetched ");
-
-                            setDefaultValuesForMissingWeatherKeys(weatherData);
-                            putWeatherDataItem(mGoogleApiClient, weatherData);
-
-                            updateUiForWeatherDataMap(weatherData);
-                        }
-                    });
-
-        }
-        private void setDefaultValuesForMissingWeatherKeys(DataMap weatherData){
-            Log.d("Wearable-WearService", "startsetDefaultvaluesForMissingWeatherKeys ");
-
-            addDataKeyIfMissing(weatherData, "WEATHER_MAX_TEMP",
-                    WEATHER_DEFAULT_VALUE);
-            addDataKeyIfMissing(weatherData, "WEATHER_MIN_TEMP",
-                    WEATHER_DEFAULT_VALUE);
-            addDataKeyIfMissing(weatherData, "WEATHER_IMAGE_ID",
-                    WEATHER_CONDITION_DEFAULT_ID);
-        }
-
-        private void addDataKeyIfMissing(DataMap weatherData, String key, Double weatherValues){
-            Log.d("Wearable-WearService", "addDataKeyIfMissing ");
-
-            if (!weatherData.containsKey(key)){
-                Log.d("Wearable-WearService", key + " is missing add to data");
-
-                weatherData.putDouble(key, weatherValues);
-            }
-        }
-        private void addDataKeyIfMissing(DataMap weatherData, String key, int weatherValues){
-            if (!weatherData.containsKey(key)){
-                Log.d("Wearable-WearService", key + " is missing add to data");
-
-                weatherData.putInt(key, weatherValues);
-            }
-        }
-
-        private Asset createAssetFromBitmap(Bitmap bitmap) {
-            final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-            return Asset.createFromBytes(byteStream.toByteArray());
+            Wearable.DataApi.addListener(mGoogleApiClient, this);
         }
 
         @Override
         public void onConnectionSuspended(int i) {
             Log.d("Wearable-WearService", "Suspended : " + i);
-
+            Wearable.DataApi.removeListener(mGoogleApiClient, this);
+            if (mGoogleApiClient.isConnected()){
+                mGoogleApiClient.disconnect();
+            }
         }
 
         @Override
         public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
             Log.d("Wearable-WearService", "onConnectionFailed : " + connectionResult);
-
         }
-
 
         @Override
         public void onDataChanged(DataEventBuffer dataEvents) {
-            for (DataEvent dataEvent : dataEvents) {
-                String path = dataEvent.getDataItem().getUri().getPath();
-                if (path.equals(PATH_WITH_WEATHER_DATA)){
-                    DataMap weatherData = DataMapItem.fromDataItem(dataEvent.getDataItem()).getDataMap();
-                    updateUiForWeatherDataMap(weatherData);
+            for (DataEvent event : dataEvents) {
+                Log.v(LOG_TAG, "At onDataChanged");
+                if (event.getType() == DataEvent.TYPE_CHANGED) {
+                    DataItem item = event.getDataItem();
+                    DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                    String path = item.getUri().getPath();
+                    if (path.equals("/wearable_weather_data")) {
+                        Log.v(LOG_TAG, "At onDataChanged - update UI");
+                        updateUiForWeatherDataMap(dataMap);
+                    }
                 }
             }
         }
@@ -500,14 +451,14 @@ public class MainActivity extends CanvasWatchFaceService {
                     continue;
                 }
                 switch (weatherKey){
-                    case "WEATHER_IMAGE_ID":
+                    case "wearable.weather_id":
                         mWeatherConditionId = weatherData.getInt(weatherKey);
                         mWeatherIconId = getSmallArtResourceIdForWeatherCondition(mWeatherConditionId);
                         break;
-                    case "WEATHER_MAX_TEMP":
+                    case "wearable.weather_max_temp":
                         mMaxTemp = weatherData.getDouble(weatherKey);
                         break;
-                    case "WEATHER_MIN_TEMP":
+                    case "wearable.weather_min_temp":
                         mMinTemp = weatherData.getDouble(weatherKey);
                         break;
                 }

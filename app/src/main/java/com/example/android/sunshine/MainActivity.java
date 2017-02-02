@@ -48,13 +48,9 @@ import com.google.android.gms.wearable.Wearable;
 import static com.google.common.collect.ComparisonChain.start;
 
 public class MainActivity extends AppCompatActivity implements
-        LoaderManager.LoaderCallbacks<Cursor>, ForecastAdapter.ForecastAdapterOnClickHandler,
-        GoogleApiClient.ConnectionCallbacks{
+        LoaderManager.LoaderCallbacks<Cursor>, ForecastAdapter.ForecastAdapterOnClickHandler {
 
     private final String TAG = MainActivity.class.getSimpleName();
-
-    private GoogleApiClient mGoogleApiClient;
-    String WEARABLE_DATA_PATH = "/wearable_weather_data";
 
     /*
      * The columns of data that we are interested in displaying within our MainActivity's list of
@@ -100,12 +96,6 @@ public class MainActivity extends AppCompatActivity implements
 
         setContentView(R.layout.activity_forecast);
         getSupportActionBar().setElevation(0f);
-
-        mGoogleApiClient = new GoogleApiClient.Builder( this )
-                .addApi( Wearable.API )
-                .addConnectionCallbacks(this)
-                .build();
-        mGoogleApiClient.connect();
 
         /*
          * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
@@ -265,31 +255,6 @@ public class MainActivity extends AppCompatActivity implements
 
         if (data.getCount() != 0) {
             showWeatherDataView();
-
-            data.moveToFirst();
-
-            // Sync Wearable Data
-            int weatherId = data.getInt(INDEX_WEATHER_CONDITION_ID);
-            final int weatherImageId = SunshineWeatherUtils.getLargeArtResourceIdForWeatherCondition(weatherId);
-
-            long localDateMidnightGmt = data.getLong(INDEX_WEATHER_DATE);
-            final String dateText = SunshineDateUtils.getFriendlyDateString(this, localDateMidnightGmt, true);
-
-            double highInCelsius = data.getDouble(INDEX_WEATHER_MAX_TEMP);
-            final String highString = SunshineWeatherUtils.formatTemperature(this, highInCelsius);
-
-            double lowInCelsius = data.getDouble(INDEX_WEATHER_MIN_TEMP);
-            final String lowString = SunshineWeatherUtils.formatTemperature(this, lowInCelsius);
-
-//
-//                    PutDataMapRequest putDataMapRequest = PutDataMapRequest.create("/watch_weather_update");
-
-            DataMap dataMap = new DataMap();
-            dataMap.putInt("WEATHER_IMAGE_ID", weatherImageId);
-            dataMap.putString("WEATHER_MIN_TEMP", lowString);
-            dataMap.putString("WEATHER_MAX_TEMP", highString);
-
-            new WearableSyncUtils(WEARABLE_DATA_PATH, dataMap, mGoogleApiClient).start();
         }
     }
 
@@ -403,21 +368,5 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
         return false;
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mGoogleApiClient.disconnect();
     }
 }

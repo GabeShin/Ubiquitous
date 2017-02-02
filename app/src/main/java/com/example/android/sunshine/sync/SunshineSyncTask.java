@@ -27,6 +27,7 @@ import com.example.android.sunshine.data.WeatherContract;
 import com.example.android.sunshine.utilities.NetworkUtils;
 import com.example.android.sunshine.utilities.NotificationUtils;
 import com.example.android.sunshine.utilities.OpenWeatherJsonUtils;
+import com.google.android.gms.wearable.PutDataMapRequest;
 
 import java.net.URL;
 
@@ -107,10 +108,34 @@ public class SunshineSyncTask {
                     NotificationUtils.notifyUserOfNewWeather(context);
                 }
 
+
+                /*
+                 * Send current weather data to wearable.
+                 */
+                ContentValues currentWeather = weatherValues[0];
+
+                double max_temp = (double) currentWeather.get(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP);
+                double min_temp = (double) currentWeather.get(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP);
+                int weather_id= (int) currentWeather.get(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID);
+
+                PutDataMapRequest putDataMapRequest=PutDataMapRequest.create(("/wearable_weather_data"));
+
+                putDataMapRequest.getDataMap().putDouble("wearable.max_temp", max_temp);
+                putDataMapRequest.getDataMap().putDouble("wearable.min_temp", min_temp);
+                putDataMapRequest.getDataMap().putInt("wearable.weather_id", weather_id);
+                putDataMapRequest.getDataMap().putLong("wearable.time", System.currentTimeMillis());
+
+                Log.d("SunshineSyncTask", "max temp is " + max_temp +
+                        "\nmin temp is " + min_temp +
+                        "\nweather id is " + weather_id);
+
+                WearableSyncUtils sendWeatherDataToWear = WearableSyncUtils.getInstance();
+                sendWeatherDataToWear.initialize(context, putDataMapRequest);
+                sendWeatherDataToWear.sendWeatherData();
+
             /* If the code reaches this point, we have successfully performed our sync */
 
             }
-
         } catch (Exception e) {
             /* Server probably invalid */
             e.printStackTrace();

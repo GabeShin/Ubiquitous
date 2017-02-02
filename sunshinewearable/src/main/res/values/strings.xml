@@ -4,7 +4,7 @@
     <string name="digital_am">AM</string>
     <string name="digital_pm">PM</string>
 
-    <string name="tap_toast">Refresh Weather Data</string>
+    <string name="tap_toast">Tapped...!</string>
 
     <!-- Weather Conditions (From OpenWeatherMap) -->
     <string name="condition_2xx">Storm</string>
